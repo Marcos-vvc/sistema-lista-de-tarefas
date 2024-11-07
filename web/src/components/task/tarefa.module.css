@@ -1,0 +1,109 @@
+.tarefasContainer{
+  width: 100%;
+  max-width: 1120px;
+  margin: 4rem auto 0;
+  padding: 0 1.5rem;  
+}
+
+.tarefasTable {
+  width: 100%;
+}
+
+.tarefaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 0 1.5rem;  
+  background: var(--gray-500);
+  margin-bottom: 0.5rem; 
+  border-radius: 6px; 
+  justify-content: space-between;
+}
+
+.tarefaCell {
+  flex: 1; 
+  padding: 1.25rem 2rem; 
+}
+
+.icon{
+  display:flex;
+  gap: 0.5rem;
+}
+
+.Trash{
+  cursor:pointer;
+  border-radius: 6px;
+  &:hover {
+    color: var(--danger);
+    background: var(--gray-400);
+  }
+}
+.tarefaCell{
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+
+.containerNoTasks {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  align-items: center;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: var(--gray-300);
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  width: 46rem;
+  line-height: 1.4;
+}
+
+.containerNoTasks img {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-top: 4rem;
+  margin-bottom: 1rem;
+}
+
+.containerNoTasks p {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+
+
+@media(max-width: 1024px) {
+  html {
+    font-size: 87.5%;
+  }
+
+  .icon{
+  
+  }
+
+  .tarefasContainer{
+    width: 100%;
+    max-width: 70rem;
+    margin: 4rem auto 0;
+    padding: 0 1.5rem;  
+  }  
+
+  
+  .tarefaRow {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 2px;
+    padding: 1.5rem;  
+    background: var(--gray-500);
+    margin-bottom: 0.5rem; 
+    border-radius: 6px; 
+  }
+  
+  .tarefaCell {
+    flex: 1; 
+    padding: 1.25rem 2rem; 
+  }
+}
