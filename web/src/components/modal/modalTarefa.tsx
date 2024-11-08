@@ -1,14 +1,16 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import styles from './modal.module.css'
-import { Pencil, X } from '@phosphor-icons/react'
 import React from 'react'
 import { IDadosTarefa } from '../task/tarefaList'
+import { X } from '@phosphor-icons/react'
 
 interface IModalTarefaProps {
   handleSubmit: (e: React.FormEvent) => void;
   setDadosTarefas: React.Dispatch<React.SetStateAction<IDadosTarefa>>;
   dadosTarefas: IDadosTarefa;
   isEditing: boolean;
+  open: boolean;
+  onClose: ()=>void;
 }
 
 export function ModalTarefa({
@@ -16,18 +18,12 @@ export function ModalTarefa({
   setDadosTarefas,
   dadosTarefas,
   isEditing,
+  open,
+  onClose,
 }: IModalTarefaProps) {
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        {isEditing
-          ? (
-            <Pencil className={styles.Pencil} size={24} />
-            )
-          : (
-            <button className={`${styles.Button} violet`}>Adicionar</button>
-            )}
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={onClose}>
+      <Dialog.Trigger asChild />
       <Dialog.Portal>
         <Dialog.Overlay className={styles.Overlay} />
         <Dialog.Content className={styles.Content}>
@@ -37,7 +33,7 @@ export function ModalTarefa({
               : 'Adicionar Tarefa'}
           </Dialog.Title>
 
-          <Dialog.Close className={styles.Close}>
+          <Dialog.Close className={styles.Close} onClick={onClose}>
             <X size={24} />
           </Dialog.Close>
 
@@ -54,13 +50,12 @@ export function ModalTarefa({
               required
             />
             <input
-              type="number"
               placeholder="Custo"
               value={dadosTarefas.custo}
               onChange={(e) =>
                 setDadosTarefas((prevState) => ({
                   ...prevState,
-                  custo: Number(e.target.value),
+                  custo: (e.target.value),
                 }))}
               required
             />

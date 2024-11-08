@@ -1,6 +1,6 @@
 import styles from './tarefa.module.css'
-import { Trash } from '@phosphor-icons/react'
-import { formatDate, priceFormatter } from '../../utils/formatter'
+import { Pencil, Trash } from '@phosphor-icons/react'
+import { priceFormatter } from '../../utils/formatter'
 import { useTarefas } from '../../hook/useTarefas'
 import React, { useState } from 'react'
 import Clip from '../../assets/Clipboard.png'
@@ -8,7 +8,7 @@ import { ModalTarefa } from '../modal/modalTarefa'
 
 export interface IDadosTarefa {
   nome: string;
-  custo: number;
+  custo: string;
   dataLimite: string;
 }
 
@@ -16,41 +16,47 @@ export function TarefaList() {
   const { tarefas, loading, post, get, put, del } = useTarefas()
 
   const defaultDadosTarefa: IDadosTarefa = {
-    nome: '', custo: 0, dataLimite: '',
+    nome: '', custo: '', dataLimite: '',
   }
   const [dadosTarefas, setDadosTarefas] =
   useState<IDadosTarefa>(defaultDadosTarefa)
 
+  const [openModal, setOpenModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editId, setEditId] = useState<number | null>(null)
+
   const handleAddTarefa = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const newTarefa = {
+    await post({
       nome: dadosTarefas.nome,
-      custo: dadosTarefas.custo,
+      custo: parseFloat(dadosTarefas.custo),
       dataLimite: dadosTarefas.dataLimite,
-    }
-
-    await post(newTarefa)
+    })
 
     await get()
 
     setDadosTarefas(defaultDadosTarefa)
+    setOpenModal(false)
   }
 
-  const handleUpdateTarefa = async (id: number, e: React.FormEvent) => {
+  const handleUpdateTarefa = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const newTarefa = {
-      nome: dadosTarefas.nome,
-      custo: dadosTarefas.custo,
-      dataLimite: dadosTarefas.dataLimite,
+    if (editId !== null) {
+      await put(editId, {
+        nome: dadosTarefas.nome,
+        custo: parseFloat(dadosTarefas.custo),
+        dataLimite: dadosTarefas.dataLimite,
+      })
+
+      await get()
+
+      setDadosTarefas(defaultDadosTarefa)
+      setOpenModal(false)
+      setIsEditing(false)
+      setEditId(null)
     }
-
-    await put(id, newTarefa)
-
-    await get()
-
-    setDadosTarefas(defaultDadosTarefa)
   }
 
   const handleDeleteTarefa = async (id: number) => {
@@ -61,6 +67,19 @@ export function TarefaList() {
     if (confirmed) {
       await del(id)
     }
+  }
+
+  const handleOpenAddModal = () => {
+    setDadosTarefas(defaultDadosTarefa)
+    setIsEditing(false)
+    setOpenModal(true)
+  }
+
+  const handleOpenEditModal = (id: number, tarefa: IDadosTarefa) => {
+    setDadosTarefas(tarefa)
+    setIsEditing(true)
+    setEditId(id)
+    setOpenModal(true)
   }
 
   if (loading) return <div>Carregando...</div>
@@ -90,16 +109,10 @@ export function TarefaList() {
                   <div className={styles.tarefaCell}>{tarefa.dataLimite}</div>
                   <div className={styles.icon}>
 
-                    <ModalTarefa
-                      dadosTarefas={{
-                        nome: tarefa.nome,
-                        custo: tarefa.custo,
-                        dataLimite: formatDate(tarefa.dataLimite),
-                      }}
-                      handleSubmit={(e) =>
-                        handleUpdateTarefa(tarefa.id, e)}
-                      setDadosTarefas={setDadosTarefas}
-                      isEditing
+                    <Pencil
+                      className={styles.Pencil}
+                      size={24}
+                      onClick={() => handleOpenEditModal(tarefa.id, tarefa)}
                     />
                     <Trash
                       className={styles.Trash}
@@ -121,11 +134,22 @@ export function TarefaList() {
             <span>Crie tarefas e organize seus itens a fazer</span>
           </div>
           )}
+
+      <button
+        className={styles.Button}
+        onClick={handleOpenAddModal}
+      >
+        Adicionar
+      </button>
       <ModalTarefa
-        handleSubmit={handleAddTarefa}
+        handleSubmit={isEditing
+          ? handleUpdateTarefa
+          : handleAddTarefa}
         dadosTarefas={dadosTarefas}
         setDadosTarefas={setDadosTarefas}
-        isEditing={false}
+        isEditing={isEditing}
+        open={openModal}
+        onClose={() => setOpenModal(false)}
       />
     </div>
   )

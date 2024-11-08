@@ -1,4 +1,4 @@
-import { IsDateString, IsNumber, IsString } from 'class-validator';
+import { IsDateString, IsISO8601, IsNumber, IsString } from 'class-validator';
 
 export class EditarTarefaDto {
   @IsString()
@@ -8,6 +8,7 @@ export class EditarTarefaDto {
   custo: number;
 
   @IsDateString()
+  @IsISO8601()
   dataLimite: string;
 
   constructor(nome: string, custo: number, dataLimite: string) {

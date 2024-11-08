@@ -62,25 +62,6 @@
    
 }
 
-.Button{
-  display:flex;
-  margin: 0 auto;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0; 
-  height: 2rem;
-  border-radius: 8px;
-  border: none;
-  font-size: 0.938rem;
-  font-weight: bold;
-  color: var(--gray-100);
-  background: var(--blue-dark);
-  transition: background-color 0.2s;
-  width: 5.625rem;
-  cursor: pointer;
-}
 
 .Pencil{
   cursor:pointer;
