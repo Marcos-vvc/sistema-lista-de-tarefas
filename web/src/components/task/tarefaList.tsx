@@ -13,7 +13,7 @@ export interface IDadosTarefa {
 }
 
 export function TarefaList() {
-  const { tarefas, loading, post, get, put, del } = useTarefas()
+  const { setData, tarefas, loading, post, get, put, del } = useTarefas()
 
   const defaultDadosTarefa: IDadosTarefa = {
     nome: '', custo: '', dataLimite: '',
@@ -24,6 +24,8 @@ export function TarefaList() {
   const [openModal, setOpenModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
+
+  const [draggedTask, setDraggedTask] = useState<number | null>(null)
 
   const handleAddTarefa = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,16 +84,40 @@ export function TarefaList() {
     setOpenModal(true)
   }
 
+  const handleDragStart = (id: number) => {
+    setDraggedTask(id)
+  }
+
+  const handleDrop = async (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+
+    if (draggedTask !== null && tarefas) {
+      const updatedTarefas = [...tarefas]
+      const draggedIndex = updatedTarefas.findIndex(
+        (tarefa) => tarefa.id === draggedTask,
+      )
+
+      const [draggedItem] = updatedTarefas.splice(draggedIndex, 1)
+
+      updatedTarefas.splice(index, 0, draggedItem)
+
+      setData(updatedTarefas)
+      setDraggedTask(null)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
   if (loading) return <div>Carregando...</div>
 
   return (
     <div className={styles.tarefasContainer}>
-
       {tarefas && tarefas.length > 0
         ? (
           <div className={styles.tarefasTable}>
-
-            {tarefas?.map((tarefa) => {
+            {tarefas?.map((tarefa, index) => {
               const custoStyle = parseFloat(tarefa.custo) >= 1000
                 ? { backgroundColor: 'yellow' }
                 : {}
@@ -101,6 +127,10 @@ export function TarefaList() {
                   key={tarefa.id}
                   className={styles.tarefaRow}
                   style={custoStyle}
+                  draggable
+                  onDragStart={() => handleDragStart(tarefa.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
                 >
                   <div className={styles.tarefaCell}>{tarefa.nome}</div>
                   <div className={styles.tarefaCell}>
@@ -108,7 +138,6 @@ export function TarefaList() {
                   </div>
                   <div className={styles.tarefaCell}>{tarefa.dataLimite}</div>
                   <div className={styles.icon}>
-
                     <Pencil
                       className={styles.Pencil}
                       size={24}
@@ -119,7 +148,6 @@ export function TarefaList() {
                       onClick={() => handleDeleteTarefa(tarefa.id)}
                       size={24}
                     />
-
                   </div>
                 </div>
               )
@@ -127,7 +155,6 @@ export function TarefaList() {
           </div>
           )
         : (
-
           <div className={styles.containerNoTasks}>
             <img src={Clip} alt="" />
             <p>Você ainda não tem tarefas cadastradas</p>

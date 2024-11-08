@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import axios from 'axios'
 import { baseURL } from '../constants/baseURL'
 import { IDadosTarefa } from '../components/task/tarefaList'
@@ -10,6 +10,7 @@ interface ApiResult<T> {
   post: (payload: any) => Promise<void>;
   put: (id: number, payload: any) => Promise<void>;
   del: (id: number) => Promise<void>;
+  setData: Dispatch<SetStateAction<T | null>>;
 }
 
 export interface Tarefa {
@@ -17,6 +18,7 @@ export interface Tarefa {
   nome: string;
   custo: string;
   dataLimite: string;
+  ordemApresentacao: number;
 }
 
 function useApi<T>(baseUrl: string): ApiResult<T> {
@@ -42,7 +44,6 @@ function useApi<T>(baseUrl: string): ApiResult<T> {
         `${baseURL}/tarefa/criar-tarefa`,
         payload)
       setData(response.data)
-      console.log(response.data)
     } catch (error) {
       console.log(error || 'Erro ao criar dados')
     } finally {
@@ -56,7 +57,6 @@ function useApi<T>(baseUrl: string): ApiResult<T> {
       const response = await axios.put(`${baseURL}/tarefa/editar/${id}`,
         payload)
       setData(response.data)
-      console.log(response.data)
     } catch (error) {
       console.log(error || 'Erro ao atualizar dados')
     } finally {
@@ -80,7 +80,7 @@ function useApi<T>(baseUrl: string): ApiResult<T> {
     get()
   }, [baseUrl])
 
-  return { data, loading, get, post, put, del }
+  return { data, loading, setData, get, post, put, del }
 }
 
 export default useApi
