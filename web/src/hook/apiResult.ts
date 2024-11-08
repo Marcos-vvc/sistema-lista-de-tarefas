@@ -12,6 +12,13 @@ interface ApiResult<T> {
   del: (id: number) => Promise<void>;
 }
 
+export interface Tarefa {
+  id: number;
+  nome: string;
+  custo: string;
+  dataLimite: string;
+}
+
 function useApi<T>(baseUrl: string): ApiResult<T> {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState<boolean>(false)

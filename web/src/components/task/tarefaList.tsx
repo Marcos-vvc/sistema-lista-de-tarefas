@@ -92,7 +92,7 @@ export function TarefaList() {
           <div className={styles.tarefasTable}>
 
             {tarefas?.map((tarefa) => {
-              const custoStyle = tarefa.custo >= 1000
+              const custoStyle = parseFloat(tarefa.custo) >= 1000
                 ? { backgroundColor: 'yellow' }
                 : {}
 
@@ -104,7 +104,7 @@ export function TarefaList() {
                 >
                   <div className={styles.tarefaCell}>{tarefa.nome}</div>
                   <div className={styles.tarefaCell}>
-                    {priceFormatter.format(tarefa.custo)}
+                    {priceFormatter.format(parseFloat(tarefa.custo))}
                   </div>
                   <div className={styles.tarefaCell}>{tarefa.dataLimite}</div>
                   <div className={styles.icon}>
