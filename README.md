@@ -6,6 +6,7 @@ Nesse desafio, foi desenvolvido uma aplicação de controle de tarefas no estilo
 - Reordernar as tarefas
 - Remover uma tarefa da listagem
 - Editar tarefa
+- Drag-and-Drop
 
 ## Apesar de serem poucas funcionalidades, foi usado alguns conceitos como:
 
