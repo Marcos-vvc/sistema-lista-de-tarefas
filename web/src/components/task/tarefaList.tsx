@@ -1,6 +1,6 @@
 import styles from './tarefa.module.css'
 import { Pencil, Trash } from '@phosphor-icons/react'
-import { priceFormatter } from '../../utils/formatter'
+import { formatDate, priceFormatter } from '../../utils/formatter'
 import { useTarefas } from '../../hook/useTarefas'
 import React, { useState } from 'react'
 import Clip from '../../assets/Clipboard.png'
@@ -13,7 +13,7 @@ export interface IDadosTarefa {
 }
 
 export function TarefaList() {
-  const { setData, tarefas, loading, post, get, put, del } = useTarefas()
+  const { setData, tarefas, loading, post, get, put, patch, del } = useTarefas()
 
   const defaultDadosTarefa: IDadosTarefa = {
     nome: '', custo: '', dataLimite: '',
@@ -25,7 +25,8 @@ export function TarefaList() {
   const [isEditing, setIsEditing] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
 
-  const [draggedTask, setDraggedTask] = useState<number | null>(null)
+  const [draggedTask, setDraggedTask] =
+  useState<{ id: number; index: number } | null>(null)
 
   const handleAddTarefa = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,24 +85,27 @@ export function TarefaList() {
     setOpenModal(true)
   }
 
-  const handleDragStart = (id: number) => {
-    setDraggedTask(id)
+  const handleDragStart = (id: number, index: number) => {
+    setDraggedTask({ id, index })
   }
 
-  const handleDrop = async (e: React.DragEvent, index: number) => {
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
 
-    if (draggedTask !== null && tarefas) {
+    if (draggedTask && tarefas) {
+      const { id, index: startIndex } = draggedTask
+
       const updatedTarefas = [...tarefas]
-      const draggedIndex = updatedTarefas.findIndex(
-        (tarefa) => tarefa.id === draggedTask,
-      )
+      const [draggedItem] = updatedTarefas.splice(startIndex, 1)
 
-      const [draggedItem] = updatedTarefas.splice(draggedIndex, 1)
-
-      updatedTarefas.splice(index, 0, draggedItem)
+      updatedTarefas.splice(dropIndex, 0, draggedItem)
 
       setData(updatedTarefas)
+
+      await patch(id, dropIndex)
+
+      await get()
+
       setDraggedTask(null)
     }
   }
@@ -110,48 +114,51 @@ export function TarefaList() {
     e.preventDefault()
   }
 
-  if (loading) return <div>Carregando...</div>
+  if (loading) return <div className={styles.loading}>Carregando...</div>
 
   return (
     <div className={styles.tarefasContainer}>
       {tarefas && tarefas.length > 0
         ? (
           <div className={styles.tarefasTable}>
-            {tarefas?.map((tarefa, index) => {
-              const custoStyle = parseFloat(tarefa.custo) >= 1000
-                ? { backgroundColor: 'yellow' }
-                : {}
+            {tarefas?.sort((a, b) => a.ordemApresentacao - b.ordemApresentacao)
+              .map((tarefa, index) => {
+                const custoStyle = parseFloat(tarefa.custo) >= 1000
+                  ? { backgroundColor: 'yellow' }
+                  : {}
 
-              return (
-                <div
-                  key={tarefa.id}
-                  className={styles.tarefaRow}
-                  style={custoStyle}
-                  draggable
-                  onDragStart={() => handleDragStart(tarefa.id)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                >
-                  <div className={styles.tarefaCell}>{tarefa.nome}</div>
-                  <div className={styles.tarefaCell}>
-                    {priceFormatter.format(parseFloat(tarefa.custo))}
+                return (
+                  <div
+                    key={tarefa.id}
+                    className={styles.tarefaRow}
+                    style={custoStyle}
+                    draggable
+                    onDragStart={() => handleDragStart(tarefa.id, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                  >
+                    <div className={styles.tarefaCell}>{tarefa.nome}</div>
+                    <div className={styles.tarefaCell}>
+                      {priceFormatter.format(parseFloat(tarefa.custo))}
+                    </div>
+                    <div className={styles.tarefaCell}>
+                      {formatDate(tarefa.dataLimite)}
+                    </div>
+                    <div className={styles.icon}>
+                      <Pencil
+                        className={styles.Pencil}
+                        size={24}
+                        onClick={() => handleOpenEditModal(tarefa.id, tarefa)}
+                      />
+                      <Trash
+                        className={styles.Trash}
+                        onClick={() => handleDeleteTarefa(tarefa.id)}
+                        size={24}
+                      />
+                    </div>
                   </div>
-                  <div className={styles.tarefaCell}>{tarefa.dataLimite}</div>
-                  <div className={styles.icon}>
-                    <Pencil
-                      className={styles.Pencil}
-                      size={24}
-                      onClick={() => handleOpenEditModal(tarefa.id, tarefa)}
-                    />
-                    <Trash
-                      className={styles.Trash}
-                      onClick={() => handleDeleteTarefa(tarefa.id)}
-                      size={24}
-                    />
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
           )
         : (

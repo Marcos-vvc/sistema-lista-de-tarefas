@@ -23,6 +23,13 @@ export class TarefaRepository {
     return resposta;
   }
 
+  async reorder(id: number, novoIndice: number) {
+    await this.prismaService.tarefa.update({
+      where: { id },
+      data: novoIndice,
+    });
+  }
+
   async deletar(id: number) {
     return await this.prismaService.tarefa.delete({ where: { id } });
   }

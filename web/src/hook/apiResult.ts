@@ -9,6 +9,7 @@ interface ApiResult<T> {
   get: () => void;
   post: (payload: any) => Promise<void>;
   put: (id: number, payload: any) => Promise<void>;
+  patch: (id: number, ordemApresentacao: number) => Promise<void>;
   del: (id: number) => Promise<void>;
   setData: Dispatch<SetStateAction<T | null>>;
 }
@@ -63,6 +64,18 @@ function useApi<T>(baseUrl: string): ApiResult<T> {
       setLoading(false)
     }
   }
+  const patch = async (id: number, ordemApresentacao: number) => {
+    setLoading(true)
+    try {
+      const response = await axios.patch(`${baseURL}/tarefa/reorder/${id}`,
+        { ordemApresentacao })
+      setData(response.data)
+    } catch (error) {
+      console.log(error || 'Erro ao atualizar dados')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const del = async (id: number) => {
     setLoading(true)
@@ -80,7 +93,7 @@ function useApi<T>(baseUrl: string): ApiResult<T> {
     get()
   }, [baseUrl])
 
-  return { data, loading, setData, get, post, put, del }
+  return { data, loading, setData, get, post, put, patch, del }
 }
 
 export default useApi

@@ -39,16 +39,19 @@ export class TarefaService {
 
     return tarefas.map((t) => ({
       ...t,
-      dataLimite: dayjs(t.dataLimite).locale('pt-br').format('DD/MM/YYYY'),
+      dataLimite: dayjs(t.dataLimite).format('YYYY-MM-DD'),
     }));
   }
 
   async editar(id: number, editarTarefaDto: EditarTarefaDto) {
+    if (editarTarefaDto.nome !== editarTarefaDto.nome) {
+      await this.tarefaExistente(editarTarefaDto.nome);
+    }
+
     const dataLimite = dayjs(editarTarefaDto.dataLimite)
       .startOf('day')
       .toDate();
 
-    await this.tarefaExistente(editarTarefaDto.nome);
     const editarTarefa = await this.tarefaRepository.editar(id, {
       ...editarTarefaDto,
       dataLimite,
@@ -56,10 +59,67 @@ export class TarefaService {
 
     return {
       ...editarTarefa,
-      dataLimite: dayjs(editarTarefa.dataLimite)
-        .locale('pt-br')
-        .format('DD/MM/YYYY'),
+      dataLimite: dayjs(editarTarefa.dataLimite).format('YYYY-MM-DD'),
     };
+  }
+
+  async reorder(id: number, novoIndice: number) {
+    const tarefaAtual =
+      await this.tarefaRepository.prismaService.tarefa.findUnique({
+        where: { id },
+      });
+
+    if (!tarefaAtual) throw new Error('Tarefa não encontrada');
+
+    const indiceAtual = tarefaAtual.ordemApresentacao;
+
+    if (indiceAtual === novoIndice) return;
+
+    const tarefaComNovoIndice =
+      await this.tarefaRepository.prismaService.tarefa.findFirst({
+        where: { ordemApresentacao: novoIndice },
+      });
+
+    if (tarefaComNovoIndice) {
+      if (indiceAtual < novoIndice) {
+        await this.tarefaRepository.prismaService.tarefa.updateMany({
+          where: {
+            ordemApresentacao: {
+              gt: indiceAtual,
+              lte: novoIndice,
+            },
+          },
+          data: {
+            ordemApresentacao: {
+              decrement: 1,
+            },
+          },
+        });
+      } else {
+        await this.tarefaRepository.prismaService.tarefa.updateMany({
+          where: {
+            ordemApresentacao: {
+              gte: novoIndice,
+              lt: indiceAtual,
+            },
+          },
+          data: {
+            ordemApresentacao: {
+              increment: 1,
+            },
+          },
+        });
+      }
+    }
+
+    await this.tarefaRepository.prismaService.tarefa.update({
+      where: {
+        id: id,
+      },
+      data: {
+        ordemApresentacao: novoIndice,
+      },
+    });
   }
 
   private async tarefaExistente(nome: string) {
